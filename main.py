@@ -172,3 +172,24 @@ def get_all_weeks():
         {"week_start": w[0], "week_end": w[1]}
         for w in weeks
     ]
+from fastapi import UploadFile, File
+import pandas as pd
+import io
+
+
+@app.post("/upload/uber")
+async def upload_uber_csv(
+    week_start: str,
+    week_end: str,
+    file: UploadFile = File(...)
+):
+    contents = await file.read()
+    df = pd.read_csv(io.BytesIO(contents))
+
+    # Здесь нужно будет указать реальные названия колонок
+    # Пока просто возвращаем список колонок
+
+    return {
+        "columns": df.columns.tolist(),
+        "rows_preview": df.head(5).to_dict(orient="records")
+    }
