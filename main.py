@@ -151,3 +151,24 @@ def get_all_drivers():
     drivers = list({row["driver_id"] for row in response.data})
 
     return drivers
+@app.get("/weeks")
+def get_all_weeks():
+    if not supabase:
+        return {"error": "Database not connected"}
+
+    response = (
+        supabase
+        .table("settlements")
+        .select("week_start, week_end")
+        .execute()
+    )
+
+    weeks = list({
+        (row["week_start"], row["week_end"])
+        for row in response.data
+    })
+
+    return [
+        {"week_start": w[0], "week_end": w[1]}
+        for w in weeks
+    ]
