@@ -92,35 +92,36 @@ async def calculate(
     )
 
     if supabase:
-       supabase.table("settlements").upsert(
-    {
-        "driver_id": driver_id,
-        "week_start": week_start,
-        "week_end": week_end,
-        "uber_brutto": uber_brutto,
-        "bolt_brutto": bolt_brutto,
-        "freenow_brutto": freenow_brutto,
-        "uber_netto": uber_netto,
-        "bolt_netto": bolt_netto,
-        "freenow_netto": freenow_netto,
-        "uber_gotowka": uber_gotowka,
-        "bolt_gotowka": bolt_gotowka,
-        "freenow_gotowka": freenow_gotowka,
-        "vat": vat,
-        "oplata_za_uslugi": oplata_za_uslugi,
-        "najem_auta": najem_auta,
-        "bonus": bonus,
-        "zus": zus,
-        "do_wyplaty": do_wyplaty
-    },
-    on_conflict="driver_id,week_start,week_end"
-).execute()
-
+        supabase.table("settlements").upsert(
+            {
+                "driver_id": driver_id,
+                "week_start": week_start,
+                "week_end": week_end,
+                "uber_brutto": uber_brutto,
+                "bolt_brutto": bolt_brutto,
+                "freenow_brutto": freenow_brutto,
+                "uber_netto": uber_netto,
+                "bolt_netto": bolt_netto,
+                "freenow_netto": freenow_netto,
+                "uber_gotowka": uber_gotowka,
+                "bolt_gotowka": bolt_gotowka,
+                "freenow_gotowka": freenow_gotowka,
+                "vat": vat,
+                "oplata_za_uslugi": oplata_za_uslugi,
+                "najem_auta": najem_auta,
+                "bonus": bonus,
+                "zus": zus,
+                "do_wyplaty": do_wyplaty
+            },
+            on_conflict="driver_id,week_start,week_end"
+        ).execute()
 
     return {
         "vat": vat,
         "do_wyplaty": do_wyplaty
     }
+
+
 @app.get("/driver/{driver_id}")
 def get_driver_settlements(driver_id: str):
     if not supabase:
@@ -136,6 +137,8 @@ def get_driver_settlements(driver_id: str):
     )
 
     return response.data
+
+
 @app.get("/drivers")
 def get_all_drivers():
     if not supabase:
@@ -151,6 +154,8 @@ def get_all_drivers():
     drivers = list({row["driver_id"] for row in response.data})
 
     return drivers
+
+
 @app.get("/weeks")
 def get_all_weeks():
     if not supabase:
@@ -172,24 +177,3 @@ def get_all_weeks():
         {"week_start": w[0], "week_end": w[1]}
         for w in weeks
     ]
-from fastapi import UploadFile, File
-import pandas as pd
-import io
-
-
-@app.post("/upload/uber")
-async def upload_uber_csv(
-    week_start: str,
-    week_end: str,
-    file: UploadFile = File(...)
-):
-    contents = await file.read()
-    df = pd.read_csv(io.BytesIO(contents))
-
-    # Здесь нужно будет указать реальные названия колонок
-    # Пока просто возвращаем список колонок
-
-    return {
-        "columns": df.columns.tolist(),
-        "rows_preview": df.head(5).to_dict(orient="records")
-    }
