@@ -177,3 +177,44 @@ def get_all_weeks():
         {"week_start": w[0], "week_end": w[1]}
         for w in weeks
     ]
+from fastapi import UploadFile, File
+
+@app.post("/upload/uber")
+async def upload_uber_csv(
+    week_start: str = Form(...),
+    week_end: str = Form(...),
+    file: UploadFile = File(...)
+):
+    import pandas as pd
+    import io
+
+    contents = await file.read()
+    df = pd.read_csv(io.BytesIO(contents))
+
+    def normalize_name(first_name, last_name):
+        full = f"{first_name} {last_name}".strip().lower()
+        parts = full.split()
+        return " ".join(parts[:2])
+
+    drivers = []
+
+    for _, row in df.iterrows():
+        name = normalize_name(
+            row["Imię kierowcy"],
+            row["Nazwisko kierowcy"]
+        )
+
+        netto = float(row["Wypłacono Ci : Twój przychód"])
+        brutto = float(row["Wypłacono Ci : Twój przychód : Opłata"])
+        gotowka = float(row["Wypłacono Ci : Bilans przejazdu : Wypłaty : Odebrana gotówka"])
+
+        drivers.append({
+            "driver": name,
+            "uber_brutto": brutto,
+            "uber_netto": netto,
+            "uber_gotowka": gotowka
+        })
+
+    return {
+        "drivers_preview": drivers[:10]
+    }
