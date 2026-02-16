@@ -132,3 +132,18 @@ def get_driver_settlements(driver_id: str):
     )
 
     return response.data
+@app.get("/drivers")
+def get_all_drivers():
+    if not supabase:
+        return {"error": "Database not connected"}
+
+    response = (
+        supabase
+        .table("settlements")
+        .select("driver_id")
+        .execute()
+    )
+
+    drivers = list({row["driver_id"] for row in response.data})
+
+    return drivers
