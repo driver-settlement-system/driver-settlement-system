@@ -117,3 +117,18 @@ async def calculate(
         "vat": vat,
         "do_wyplaty": do_wyplaty
     }
+@app.get("/driver/{driver_id}")
+def get_driver_settlements(driver_id: str):
+    if not supabase:
+        return {"error": "Database not connected"}
+
+    response = (
+        supabase
+        .table("settlements")
+        .select("*")
+        .eq("driver_id", driver_id)
+        .order("week_start", desc=True)
+        .execute()
+    )
+
+    return response.data
