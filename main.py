@@ -1,15 +1,16 @@
-from fastapi import FastAPI, UploadFile, File, Form
-import pandas as pd
-from supabase import create_client
+from fastapi import FastAPI, Form
 import os
-from datetime import datetime
+from supabase import create_client
 
 app = FastAPI()
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = None
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def calculate_settlement(
@@ -47,6 +48,11 @@ def calculate_settlement(
     return vat, do_wyplaty
 
 
+@app.get("/")
+def root():
+    return {"status": "Server działa"}
+
+
 @app.post("/calculate")
 async def calculate(
     driver_id: str = Form(...),
@@ -82,26 +88,27 @@ async def calculate(
         zus
     )
 
-    supabase.table("settlements").insert({
-        "driver_id": driver_id,
-        "week_start": week_start,
-        "week_end": week_end,
-        "uber_brutto": uber_brutto,
-        "bolt_brutto": bolt_brutto,
-        "freenow_brutto": freenow_brutto,
-        "uber_netto": uber_netto,
-        "bolt_netto": bolt_netto,
-        "freenow_netto": freenow_netto,
-        "uber_gotowka": uber_gotowka,
-        "bolt_gotowka": bolt_gotowka,
-        "freenow_gotowka": freenow_gotowka,
-        "vat": vat,
-        "oplata_za_uslugi": oplata_za_uslugi,
-        "najem_auta": najem_auta,
-        "bonus": bonus,
-        "zus": zus,
-        "do_wyplaty": do_wyplaty
-    }).execute()
+    if supabase:
+        supabase.table("settlements").insert({
+            "driver_id": driver_id,
+            "week_start": week_start,
+            "week_end": week_end,
+            "uber_brutto": uber_brutto,
+            "bolt_brutto": bolt_brutto,
+            "freenow_brutto": freenow_brutto,
+            "uber_netto": uber_netto,
+            "bolt_netto": bolt_netto,
+            "freenow_netto": freenow_netto,
+            "uber_gotowka": uber_gotowka,
+            "bolt_gotowka": bolt_gotowka,
+            "freenow_gotowka": freenow_gotowka,
+            "vat": vat,
+            "oplata_za_uslugi": oplata_za_uslugi,
+            "najem_auta": najem_auta,
+            "bonus": bonus,
+            "zus": zus,
+            "do_wyplaty": do_wyplaty
+        }).execute()
 
     return {
         "vat": vat,
