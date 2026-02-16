@@ -92,26 +92,30 @@ async def calculate(
     )
 
     if supabase:
-        supabase.table("settlements").insert({
-            "driver_id": driver_id,
-            "week_start": week_start,
-            "week_end": week_end,
-            "uber_brutto": uber_brutto,
-            "bolt_brutto": bolt_brutto,
-            "freenow_brutto": freenow_brutto,
-            "uber_netto": uber_netto,
-            "bolt_netto": bolt_netto,
-            "freenow_netto": freenow_netto,
-            "uber_gotowka": uber_gotowka,
-            "bolt_gotowka": bolt_gotowka,
-            "freenow_gotowka": freenow_gotowka,
-            "vat": vat,
-            "oplata_za_uslugi": oplata_za_uslugi,
-            "najem_auta": najem_auta,
-            "bonus": bonus,
-            "zus": zus,
-            "do_wyplaty": do_wyplaty
-        }).execute()
+       supabase.table("settlements").upsert(
+    {
+        "driver_id": driver_id,
+        "week_start": week_start,
+        "week_end": week_end,
+        "uber_brutto": uber_brutto,
+        "bolt_brutto": bolt_brutto,
+        "freenow_brutto": freenow_brutto,
+        "uber_netto": uber_netto,
+        "bolt_netto": bolt_netto,
+        "freenow_netto": freenow_netto,
+        "uber_gotowka": uber_gotowka,
+        "bolt_gotowka": bolt_gotowka,
+        "freenow_gotowka": freenow_gotowka,
+        "vat": vat,
+        "oplata_za_uslugi": oplata_za_uslugi,
+        "najem_auta": najem_auta,
+        "bonus": bonus,
+        "zus": zus,
+        "do_wyplaty": do_wyplaty
+    },
+    on_conflict="driver_id,week_start,week_end"
+).execute()
+
 
     return {
         "vat": vat,
